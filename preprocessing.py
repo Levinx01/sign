@@ -7,9 +7,13 @@ from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 from torch_sparse import SparseTensor
+from torch_geometric.transforms as T
+from torch_geometric.data import Data
 from torch_geometric.utils import to_undirected, dropout_adj
 
-from ogb.nodeproppred import PygNodePropPredDataset
+from utils import DGraphFin
+from utils.utils import prepare_folder
+
 
 def get_adj(row, col, N, asymm_norm=False, set_diag=True, remove_diag=False):
     
@@ -60,11 +64,13 @@ def main():
         raise ValueError('Please specify whether you want to use undirected or directed operators (or both).')
     
     # pre-processing ######################################################
-
-    dataset = PygNodePropPredDataset('ogbn-papers100M')
-    split_idx = dataset.get_idx_split()
+    path='./datasets/632d74d4e2843a53167ee9a1-momodel/' #数据保存路径
+    save_dir='./results/' #模型保存路径
+    dataset_name='DGraph'
+    dataset = DGraphFin(root=path, name=dataset_name, transform=T.ToSparseTensor())
     data = dataset[0]
-
+    split_idx = {'train': data.train_mask, 'valid': data.valid_mask, 'test': data.test_mask}
+    
     x = data.x.numpy()
     N = data.num_nodes
 
